@@ -1,5 +1,6 @@
 OBJS = \
 	bio.o\
+	pagecache.o\
 	console.o\
 	exec.o\
 	file.o\
@@ -21,6 +22,7 @@ OBJS = \
 	swtch.o\
 	syscall.o\
 	sysfile.o\
+	sys_map.o\
 	sysproc.o\
 	trapasm.o\
 	trap.o\

@@ -91,6 +91,21 @@ void            end_op();
 extern int      ismp;
 void            mpinit(void);
 
+// sys_map.c
+void *my_mmap(int, int, int, int, int, int);
+int my_munmap(struct proc *, int, int);                                     // Main munmap function
+// Copy parent mapping to child (required for fork)
+int copy_maps(struct proc *, struct proc *);
+int mmap_store_data(struct proc *, int, int, int, int, struct file *, int); // Store physical page in memory mapping
+void delete_mmaps(struct proc *);                                           // Delete all the mappings
+uint get_physical_page(struct proc *, uint, uint **);                      // Get physical page address from virtual
+
+// pagecache.c
+// Initialize the page cache
+void pagecacheinit(void);
+// To copy the page
+int copyPage(struct inode* , int , int , int , char* , int , int );
+
 // picirq.c
 void            picenable(int);
 void            picinit(void);
@@ -185,6 +200,8 @@ void            switchuvm(struct proc*);
 void            switchkvm(void);
 int             copyout(pde_t*, uint, void*, uint);
 void            clearpteu(pde_t *pgdir, char *uva);
+int mappages(pde_t *, void *, uint, uint, int);
+uint *walkpgdir(pde_t *, const void *, int);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

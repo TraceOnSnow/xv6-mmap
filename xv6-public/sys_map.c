@@ -238,8 +238,9 @@ static int map_pagecache_page_util(struct proc *p, struct file *f, uint mmapaddr
     {
       break;
     }
-    int a = copyPage(f->ip, offset + PGSIZE * i, f->ip->inum, f->ip->dev,
-                     temp + size - tempsize, currsize, curroff);
+    int a =0 ;
+    // a = copyPage(f->ip, offset + PGSIZE * i, f->ip->inum, f->ip->dev,
+                    //  temp + size - tempsize, currsize, curroff);
     if (a == -1)
       return -1;
     tempsize -= currsize;
@@ -416,14 +417,8 @@ void *my_mmap(int addr, int length, int prot, int flags, int fd, int offset)
   }
   // Store mmap info in process's mmap array
   p->mmaps[i].flags = flags;
-  if (prot == PROT_NONE)
-  {
-    p->mmaps[i].protection = 0;
-  }
-  else
-  {
-    p->mmaps[i].protection = PTE_U | prot;
-  }
+
+  p->mmaps[i].protection = PTE_U | prot;
   p->mmaps[i].offset = offset;
   p->mmaps[i].f = f;
   p->total_mmaps += 1;

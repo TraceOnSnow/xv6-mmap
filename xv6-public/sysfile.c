@@ -15,6 +15,8 @@
 #include "sleeplock.h"
 #include "file.h"
 #include "fcntl.h"
+#include "x86.h"
+#include "mmap.h"
 
 // Fetch the nth word-sized system call argument as a file descriptor
 // and return both the descriptor and the corresponding struct file.
@@ -27,7 +29,7 @@ argfd(int n, int *pfd, struct file **pf)
   if(argint(n, &fd) < 0)
     return -1;
   if(fd < 0 || fd >= NOFILE || (f=myproc()->ofile[fd]) == 0)
-    return -1;
+		return -1;
   if(pfd)
     *pfd = fd;
   if(pf)
@@ -443,13 +445,36 @@ sys_pipe(void)
   return 0;
 }
 
-
-
-int 
-sys_mmap(void) {
+// implementation of mmap system call
+int sys_mmap(void) {
+  int addr;
+  int length;
+  int prot;
+  int flags;
+  int offset;
+  int fd;
+  // struct file *f = 0;
+  // Integer arguements
+  if (argint(1, &length) < 0 || argint(2, &prot) < 0 ||
+      argint(3, &flags) < 0 || argint(4, &fd) < 0 || argint(5, &offset) < 0) {
+    return -1;
+  }
+  // address arguement
+  if (argint(0, &addr) < 0) {
+    return -1;
+  }
   
+  return (int)my_mmap(addr, length, prot, flags, fd, offset);
+  // return (int)my_mmap(addr, length, prot, flags, f, offset);
+  // return (int)my_mmap(addr, f, size, offset, flags, protection);
 }
 
+// munmap system call
 int sys_munmap(void) {
-  
+  int addr, size;
+  if (argint(0, &addr) < 0 || argint(1, &size)) {
+    return -1;
+  }
+  struct proc *p = myproc();
+  return my_munmap(p, addr, size);
 }
