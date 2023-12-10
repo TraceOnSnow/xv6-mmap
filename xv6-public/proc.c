@@ -111,6 +111,7 @@ found:
   p->context = (struct context*)sp;
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
+	p->total_mmaps = 0;
 
   return p;
 }
@@ -196,6 +197,12 @@ fork(void)
     np->state = UNUSED;
     return -1;
   }
+  if(copy_maps(curproc, np) < 0) {
+		kfree(np->kstack);
+		np->kstack = 0;
+		np->state = UNUSED;
+		return -1;
+	}
   np->sz = curproc->sz;
   np->parent = curproc;
   *np->tf = *curproc->tf;
@@ -241,6 +248,9 @@ exit(void)
       curproc->ofile[fd] = 0;
     }
   }
+
+  // Delete all the mappings
+  delete_mmaps(curproc);
 
   begin_op();
   iput(curproc->cwd);
