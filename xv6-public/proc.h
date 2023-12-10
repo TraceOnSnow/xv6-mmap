@@ -1,5 +1,3 @@
-#define NOMAP 32
-
 // Per-CPU state
 struct cpu {
   uchar apicid;                // Local APIC ID
@@ -34,31 +32,37 @@ struct context {
   uint eip;
 };
 
-enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
+struct mmap_region {
+  uint virt_addr;    // Virtual address of mapping
+  uint size;         // Size of mapping
+  int flags;         // Flags on mapping
+  int protection;    // Read, write, exec protections for the pages
+  struct file *f;    // File structure if mapping is not anonymous
+  int offset;        // File offset if mapping is not anonymous
+  int ref_count;     // 1 if the mapping is shared and process is child
+  int stored_size;   // If any page is mapped corresponding to this address
+  uint guard_page;   // The virtual address of the guard page
+};
 
-struct my_map {
-  int prot;
-  int flags;
-  int 
-}
+enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 
 // Per-process state
 struct proc {
-  uint sz;                     // Size of process memory (bytes)
-  pde_t* pgdir;                // Page table
-  char *kstack;                // Bottom of kernel stack for this process
-  enum procstate state;        // Process state
-  int pid;                     // Process ID
-  struct proc *parent;         // Parent process
-  struct trapframe *tf;        // Trap frame for current syscall
-  struct context *context;     // swtch() here to run process
-  void *chan;                  // If non-zero, sleeping on chan
-  int killed;                  // If non-zero, have been killed
-  struct file *ofile[NOFILE];  // Open files
-  struct inode *cwd;           // Current directory
-  char name[16];               // Process name (debugging)
-  struct my_map maps[NOMAP];
-  int map_cnt;
+  uint sz;                      // Size of process memory (bytes)
+  pde_t *pgdir;                 // Page table
+  char *kstack;                 // Bottom of kernel stack for this process
+  enum procstate state;         // Process state
+  int pid;                      // Process ID
+  struct proc *parent;          // Parent process
+  struct trapframe *tf;         // Trap frame for current syscall
+  struct context *context;      // swtch() here to run process
+  void *chan;                   // If non-zero, sleeping on chan
+  int killed;                   // If non-zero, have been killed
+  struct file *ofile[NOFILE];   // Open files
+  struct inode *cwd;            // Current directory
+  char name[16];                // Process name (debugging)
+  struct mmap_region mmaps[30]; // List of allocated mmap regions
+  int total_mmaps;              // Total memory mappings
 };
 
 // Process memory is laid out contiguously, low addresses first:
